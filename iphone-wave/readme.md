@@ -1,4 +1,4 @@
 iOS 7, siri wave form animation
 ========================
 
-live demo: [will be added soon!]()
+live demo: [link to sample @cistoner](http://cistoner.org/sample/iphwave/)

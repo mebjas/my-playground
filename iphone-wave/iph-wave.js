@@ -22,6 +22,7 @@ var FREQ = 100;
 var SPLITTER = 20;
 var AMP = 60;
 var DIST = -50;
+var AMP_MULTIPLIER = 300;
 
 // constant funcitons
 function clear() {
@@ -38,7 +39,7 @@ var x = 0;
 
 function draw() {
     if (meter && meter.volume > .01)
-        AMP = 200*(meter.volume);
+        AMP = AMP_MULTIPLIER*(meter.volume);
     else AMP = 10;
 
     if (SPLITTER < 40)
