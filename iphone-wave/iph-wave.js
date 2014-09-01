@@ -34,7 +34,6 @@ var startAngle = Math.PI/2;
 var currentX = -Math.PI/2;
 var t; 
 var dir = -1;
-
 var x = 0;
 
 function draw() {
@@ -52,15 +51,15 @@ function draw() {
     
     // draw the center line opacity  = 1
     
-    ctx.beginPath();
+	ctx.beginPath();
 	ctx.strokeStyle = "rgba(0,0,255,.1)";
 	ctx.moveTo(0, mh);
-    ctx.lineTo(MAXWIDTH, mh);
+	ctx.lineTo(MAXWIDTH, mh);
 	ctx.stroke();
     
     
     
-    // Draw the Sine Curve
+	// Draw the Sine Curve
 	for (var i = AMP ; i > 0; i-=10) {
 
 		ctx.beginPath();
@@ -68,7 +67,7 @@ function draw() {
 		ctx.moveTo(0,mh);
 		var x = 0;
         
-        ctx.moveTo(x, mh -(i*Math.sin(((currentX + x/SPLITTER)%360)/Math.PI)));
+		ctx.moveTo(x, mh -(i*Math.sin(((currentX + x/SPLITTER)%360)/Math.PI)));
 		while ( x < MAXWIDTH) {
 			ctx.lineTo(x, mh -(i*Math.sin(((currentX + x/SPLITTER)%360)/Math.PI)));
 			x++;
@@ -83,23 +82,25 @@ function draw() {
 function stop(){
     clearTimeout(t);
 }
+
+// -- call the drawing function
 draw();
 
 
 if (navigator.getUserMedia) {
     navigator.getUserMedia({audio: true, video: false}, // Success callback
-  function(stream) {
-    source = audioContext.createMediaStreamSource(stream);
-    var mediaStreamSource = audioContext.createMediaStreamSource(stream);
+  	function(stream) {
+	    source = audioContext.createMediaStreamSource(stream);
+	    var mediaStreamSource = audioContext.createMediaStreamSource(stream);
 
-    // Create a new volume meter and connect it.
-	meter = createAudioMeter(audioContext);
-	mediaStreamSource.connect(meter);
-    //visualize(stream);
-  },
+	    // Create a new volume meter and connect it.
+		meter = createAudioMeter(audioContext);
+		mediaStreamSource.connect(meter);
+	    //visualize(stream);
+    },
 
-  // Error callback
-  function(err) {
-    console.log('The following gUM error occured: ' + err);
-  });
+  	// Error callback
+ 	function(err) {
+    	console.log('The following gUM error occured: ' + err);
+  	});
 }
