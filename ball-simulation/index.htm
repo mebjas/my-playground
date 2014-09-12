@@ -1,0 +1,224 @@
+<html>
+<head>
+<title>canvas ex : 4</title>
+<script src="js/jquery.js"></script><script src="js/jquery-ui.js"></script>
+<meta type="description" content="a mouse move section"></meta>
+<style type=text/css> 
+button{
+		background: #3b5998;
+		background-image: -webkit-linear-gradient(top, rgb(77, 144, 254), rgb(71, 135, 237));
+		background-image: -o-linear-gradient(to bottom right,rgb(77, 144, 254),rgb(71, 135, 237));
+		padding: 8px 12px 8px 12px;color: white;border: 1px solid rgb(47, 91, 183);
+		border-radius: 5px;
+		 font-weight: bold;font-size: .85em;
+		-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+		display: inline
+	}button:hover{background-image:-webkit-linear-gradient(top, rgb(77, 144, 254), rgb(53, 122, 232));
+	background-image: -o-linear-gradient(to bottom right,rgb(77, 144, 254),rgb(53, 122, 232));
+		cursor: pointer;
+	}
+body{padding: 0px;margin: 0px;overflow: hidden}
+#details,#controls,#spl_controls{background: white;opacity: .9;position: absolute;top: 20px;right: 10px;width: 200px;padding: 20px;border: 1px solid grey;
+border-radius: 5px;font-family: Verdana;color: #005353;-webkit-box-shadow: inset 0px 0px 20px #005353;cursor: move}
+#controls{top: 300px;}
+#spl_controls{left: 20px;top: 20px}
+#controls input{width: 180px;}
+</style>
+<body>
+<canvas id="myCanvas" width="600" height="500" style="border: 1px solid black;margin-left: 20%"></canvas>
+<script>
+$(function() {
+    $("#details,#controls,#spl_controls" ).draggable();
+  });
+var s = 0;
+var manual = 0;
+var t;
+var coordx = new Array();
+var coordy = new Array();
+var gravity  = new Array();
+var epm  = new Array();
+var canvas = document.getElementById('myCanvas');
+var ctx = canvas.getContext('2d');
+//=======properties=====constants===============
+var g = 4; $("#value_g").html(g);
+var e = 0.99; 
+var Vx = -50;
+var Vy = 10;
+//properties ================variables========
+var pathx = 1;
+var pathy = 1;
+var x = canvas.width/2;
+var y = 100;
+//functions ==============================
+function swapX(){if(pathx==1)pathx = -1;else pathx = 1;
+}
+function swapY(){if(pathy==1)pathy = -1;else pathy = 1;
+}
+function draw(a,b){
+	ctx.beginPath();
+	ctx.arc(a, b, 10, 0, 2 * Math.PI, false);
+	ctx.fillStyle = 'red';
+	ctx.fill();
+	ctx.lineWidth = 1;
+	ctx.strokeStyle = 'black';
+	ctx.stroke();
+}
+function clr(){
+	ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+//==========pre functions over==================
+	clr();
+	draw(x,y); //drawing for first time
+    var count = 0;
+	function start(){if(s){alert("already started");}else {s=1;startx();}}
+    function startx(){
+    	//s=1;
+    	clr();
+    	count++;
+    	console.log("loop ran " +count +" times \n");
+    	if((x<0&&pathx==1)||x>canvas.width){
+    	swapX();
+    	Vx = e*Vx;
+    	}
+    	if(y==0||(y>canvas.height&pathy==1)){swapY();
+    	Vy = e*Vy;}
+    	else if(Vy<0&&y>0){swapY();
+    	Vy = e*Vy;}
+    //	alert();
+    	if(pathx==1&&pathy==1){
+    		x = x + Vx*.05;
+    		y = y + Vy*.05 + (.5)*g*(.5)*(.5);
+    		Vy = Vy + .5*g;
+    		draw(x,y);
+    	}
+    	else if(pathx==-1&&pathy==1){
+    		x = x - Vx*.05;
+    		y = y + Vy*.05 + (.5)*g*(.5)*(.5);
+    		Vy = Vy + .5*g;
+    		draw(x,y);
+    	}
+    	else if(pathx==1&&pathy==-1){
+    		x = x + Vx*.05;
+    		y = y -( Vy*.05 - (.5)*g*(.5)*(.5) );
+    		Vy = Vy - .5*g;
+    		draw(x,y);
+    	}
+    	else if(pathx==-1&&pathy==-1){
+    		x = x - Vx*.05;
+    		y = y -( Vy*.05 - (.5)*g*(.5)*(.5) );
+    		Vy = Vy - .5*g;
+    		draw(x,y);
+    	}
+    	coordx[coordx.length] = x;
+    	coordy[coordy.length] = y;
+    	gravity[gravity.length] = g;
+    	epm[epm.length] = e;
+    	//$("#log").append("x<br>");
+    	fetch_details();
+    	t = setTimeout("startx()",50); //recall in 50 micro seconds
+    }
+    function stop(){
+    	clearTimeout(t);
+    	s=0;
+    }
+    function graph(){
+    	stop();
+    		clr();
+    		ctx.beginPath();
+    		ctx.moveTo(coordx[0],coordy[0]);
+    		var i;for(i=0;i<coordx.length-1;i+=1){
+    			ctx.lineTo(coordx[i+1],coordy[i+1]);
+    		}
+    		ctx.strokeStyle = 'red';
+    		ctx.stroke();
+    	
+    }
+    function fetch_details(){
+    	var details = "X coord = " +x +"<br>";
+    	details += "Y coord = " +y +"<br>";
+    	details += "y-velocity = " +Vy +"<br>";
+    	details += "X-velocity = " +Vx +"<br>";
+    	details += "g = " +g +"<br>";
+    	details += "e = " +e +"<br>";
+    	details += "PathX = " +pathx +"<br>";
+    	details += "PathY = " +pathy +"<br>";
+    	$("#details").html(details);	
+    }
+    function range_values_show(){
+    	$("#value_g").html(document.getElementById('r_g').value);
+    	$("#value_e").html(document.getElementById('r_e').value);
+    }
+    function changeG(){g = document.getElementById('r_g').value;range_values_show();}
+    function changeE(){e = document.getElementById('r_e').value;range_values_show();}
+    function animate(){
+    	$('#spl_controls').animate({left:'220px'}, 500);
+    	$("#details").animate({right:'620px'}, 500);
+    	$("#controls").animate({right:'905px'}, 500).animate({top:'160px'}, 500);
+    	//$("#details").css("left","200px").css("top","20px");
+    //$("#controls").css("left","520px").css("top","20px");
+    //$("#spl_controls").css("left","520px").css("top","220px");
+    }
+    function clashpoints()
+    {   
+    	//alert();
+    	$("#load").html("<img src='images/016.gif'>");
+    	var i;
+    	var j;
+    	var l1 = coordx.length;
+    	for(i=0;i<l1;i++){
+    		for(j=0;j<l1;j++){
+    			if(j==i){continue;}
+    			if((coordx[i]==coordx[j])&&(coordy[i]==coordy[j])){
+    				alert();
+    				ctx.beginPath();
+    	    		ctx.moveTo(coordx[j],coordy[j]);
+    	    		ctx.arc(coordx[i], coordy[i], 10, 0, 2 * Math.PI, false);
+    	    		ctx.strokeStyle = "blue";
+    	    		ctx.stroke();
+    			}
+    		}
+    	}
+    	 $("#load").fadeOut();
+    }
+    $(document).ready(function(){
+    	$(document).keydown(function(e){
+    		//alert(e.which);
+    		
+    		if(manual){
+    			if(e.which==38||e.which==40)swapY();
+    			else if(e.which==37||e.which==39)swapX();
+    		}
+    		
+    	});
+    });
+   function activate(){
+	   manual = 1;
+	   $("#nuke").html("Deactivate manual controls").attr("onclick","deactivate()");   
+   }
+   function deactivate(){
+	   manual = 0;
+	   $("#nuke").html("Activate manual controls").attr("onclick","activate()");
+   }
+</script>
+	<div id="details"></div>
+	<div id="controls">
+	<strong>gravity : <span id="value_g"></span></strong><br><input onchange="changeG()" id="r_g" type=range min=-20 max=20 step=.2> </br>
+	<strong>e : <span id="value_e"></span></strong><br><input  onchange="changeE()" id="r_e" type=range min=0 max=1.5 step=.02> </br>
+	
+	</div>
+	<div id="spl_controls" style="text-align: center"><button onclick="swapX()">swap X</button><button onclick="swapY()">swap Y</button>
+	<button id="nuke" onclick="activate()">Activate manual controls</button>
+	</div>
+	<br>
+	<div style="text-align: center">
+<button onclick="start()">start</button><button onclick="stop()">stop</button><button onclick="graph()">plot</button>
+<button onclick="animate()">get details</button><button onclick="clashpoints()">get clash points</button><span id=load></span>
+</div>
+<span id=log></span>
+<script>
+$("#value_g").html(g);document.getElementById('r_g').value = g;
+$("#value_e").html(e);document.getElementById('r_e').value = e;
+</script>
+</body>
+</head>
+</html>
