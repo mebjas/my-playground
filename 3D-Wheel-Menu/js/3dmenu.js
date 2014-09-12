@@ -88,7 +88,7 @@ menu3d.prototype.Draw = function() {
 			}
 			
 			obj.css("color", "rgb(11, 167, 36)");
-
+            obj.css("-webkit-transform", "rotateX(0deg)");
 		} else {
 			var obj = $("." +this.c +" ul li[did='" +i +"']");
 			this.top -= ((this.totalHeight - this.initHeight) / this.atBack);
@@ -97,6 +97,7 @@ menu3d.prototype.Draw = function() {
 			obj.css("top", this.top +"px");
 			obj.css("font-size", "10pt");
 			obj.css("color", "white");
+            obj.css("-webkit-transform", "rotateX(180deg)");
 		}
 	}
 }
