@@ -1,0 +1,162 @@
+<html>
+<head>
+<title>a resposive canvas</title>
+<script src="js/jquery.js"></script><script src="js/jquery-ui.js"></script>
+<canvas id="myCanvas" width="600" height="500" style="border: 1px solid black;margin-left: 20%"></canvas>
+    <script>
+        var MAX = 30;
+        var r = 20;  
+        var canvas = document.getElementById('myCanvas'); 
+        var ctx = canvas.getContext("2d");
+
+        var nodes = [];
+        var distance = [];
+        var state = 0;
+        var parent = [];
+        // ^ 0 means creating nodes
+
+        var queue = function() {
+            this.list = [];
+            this.fp = 0;
+            this.rp = 0;
+        }
+        queue.prototype.push = function(no) {
+            this.list[this.rp] = no;
+            this.rp++;
+        }
+        queue.prototype.pop = function() {
+            var ret = this.fp;
+            this.fp++;
+            return this.list[ret];
+        }
+        queue.prototype.empty = function() {
+            return this.fp == this.rp;
+        }
+        
+        Math.sqr = function(no) {
+            return no * no;
+        }
+        
+        function plot() {
+            ctx.strokeStyle = 'RED';
+            for(i = 0; i < nodes.length; i++) {
+                if (parent[i] == -1 || parent[i] == i) continue;
+                ctx.beginPath();
+                ctx.moveTo(nodes[i].x, nodes[i].y);
+                ctx.lineTo(nodes[parent[i]].x, nodes[parent[i]].y);
+                ctx.stroke();
+            }
+            ctx.strokeStyle = 'BLACK';
+        }
+        
+        function dijakstra() {
+            var visited = [];
+            var d = [];
+            for(i = 0; i < nodes.length; i++) {
+                visited[i] = false;
+                d[i] = 10000000;
+            }
+            d[0] = 0;
+            parent[0] = -1;
+            var q = new queue();
+            q.push(0);
+            while(!q.empty()) {
+                var u = q.pop();
+                visited[u] = true;
+                for(i = 0; i < nodes.length; i++) {
+                    if (distance[u][i] == -1)
+                        continue;               
+                    if (!visited[i] && d[u] + distance[u][i] < d[i]) {
+                        d[i] = d[u] + distance[u][i];
+                        parent[i] = u;
+                        q.push(i);
+                    }
+                }
+            }
+            plot();
+        };
+        
+        function begin() {
+            for(i = 0; i < nodes.length; i++) {
+                distance[i] = [];
+                for(j = 0; j < nodes.length; j++) {
+                    if (i == j)
+                        distance[i][j] = 0;
+                    else {
+                        if (Math.ceil(Math.random() * 100) > 50) {
+                            distance[i][j] = Math.sqrt( Math.sqr(nodes[i].x - nodes[j].x) + Math.sqr(nodes[i].y - nodes[j].y) );
+                            ctx.beginPath();
+                            ctx.moveTo(nodes[i].x, nodes[i].y);
+                            ctx.lineTo(nodes[j].x, nodes[j].y);
+                            ctx.stroke();
+                        } else {
+                            distance[i][j] = -1;
+                        }
+                    }
+                }
+            }
+            
+            dijakstra();
+        }
+        
+        function redrawCitied() {
+            ctx.strokeStyle = 'BLACK';
+            for(i = 0; i < nodes.length; i++ ) {
+                ctx.beginPath();
+                ctx.arc(nodes[i].x, nodes[i].y, r, 0, 360);
+                ctx.font = "14px Arial";
+                ctx.fillText(i + 1, nodes[i].x - 7, nodes[i].y + 7);
+                ctx.stroke();
+            }
+        }
+        
+        function hideAllPath() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            // plot all the points again
+            redrawCitied();
+            plot();
+        }
+        
+        function showAllPath() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            // plot all the points again
+            redrawCitied();
+            
+            for(i = 0; i < nodes.length; i++) {
+                for(j = 0; j < nodes.length; j++) {
+                    if (distance[i][j] == -1 || i == j) continue;
+                    ctx.beginPath();
+                    ctx.moveTo(nodes[i].x, nodes[i].y);
+                    ctx.lineTo(nodes[j].x, nodes[j].y);
+                    ctx.stroke();
+                }
+            }
+            plot();
+        }
+        
+        canvas.onclick = function(e) {
+            if (nodes.length == MAX)
+                return;
+            
+            ctx.beginPath();
+            ctx.arc(e.layerX, e.layerY, r, 0, 360);
+            ctx.font = "14px Arial";
+            ctx.fillText(nodes.length + 1, e.layerX - 7, e.layerY+7);
+            ctx.stroke();
+            nodes[nodes.length] = {x: e.layerX, y: e.layerY};
+            
+            if (nodes.length == MAX) {
+                begin();
+            }
+        }
+        
+        document.onkeypress = function(e) {
+            if (e.which == 115) showAllPath();
+            else if (e.which == 104) hideAllPath();
+            else if (e.which == 99) begin();
+        }
+    </script>
+    
+</body>
+</head>
+</html>
