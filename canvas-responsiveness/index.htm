@@ -1,0 +1,77 @@
+<html>
+<head>
+<title>a resposive canvas</title>
+<script src="js/jquery.js"></script><script src="js/jquery-ui.js"></script>
+<canvas id="myCanvas" width="600" height="500" style="border: 1px solid black;margin-left: 20%"></canvas>
+<script>
+    var d = 20;
+    var dd = d / 2;
+    
+    var canvas = document.getElementById('myCanvas'); 
+    var ctx = canvas.getContext("2d");
+    var store = new Array();
+    for(i = 0; i < canvas.height; i++) {
+        store[i] = new Array();
+        for(j = 0; j < canvas.width; j++) {
+            store[i][j] = false;
+        }
+    };
+    
+    canvas.onclick = function(e) {
+        var x = e.layerX;
+        var y = e.layerY;
+        // check if x,y is booked
+        if (store[y][x]) {
+            console.log('cant create a new one here');
+        } else {
+            ctx.fillRect(x - dd, y - dd, d, d);
+            for(i = y-dd; i < y+dd; i++) {
+                for( j = x-dd; j < x+dd; j++) {
+                    store[i][j] = true;
+                }
+            }
+        }
+    };
+    
+    var prev = {x:0, y:0};
+    canvas.onmousemove = function(e) {
+        var curr = {x: e.layerX, y: e.layerY};
+        // decolourise the prev one
+        var x = prev.x;
+        var y = prev.y;
+        if (store[y][x]) {
+            document.body.style.cursor = 'default';
+            while(store[y][x])y--;
+            y++;
+            while(store[y][x])x--;
+            x++;
+            ctx.strokeStyle = 'WHITE';
+            ctx.fillStyle = 'WHITE';
+            ctx.fillRect(x-4, y - 4, d+8, d+8);
+            ctx.fillStyle = 'BLACK';
+            ctx.fillRect(x, y, d, d);
+        }
+        // colorise the new one
+        
+        x = curr.x;
+        y = curr.y;
+        if (store[y][x]) {
+            document.body.style.cursor = 'pointer';
+            while(store[y][x])y--;
+            y++;
+            while(store[y][x])x--;
+            x++;
+            ctx.fillStyle = 'WHITE';
+            ctx.fillRect(x-4, y - 4, d+8, d+8);
+            
+            ctx.strokeStyle = 'rgba(255,0,0,.7)';
+            ctx.strokeRect(x-3, y-3, d+6, d+6);
+            ctx.fillStyle = "rgba(255,0,0,.5)";
+            ctx.fillRect(x, y, d, d);
+        }
+        prev = curr;
+    }
+</script>
+</body>
+</head>
+</html>
