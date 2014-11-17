@@ -1,0 +1,202 @@
+<html>
+<head>
+<title>cloth simulation</title>
+<script src="js/jquery.js"></script><script src="js/jquery-ui.js"></script>
+<body style="margin:0px;padding:0px">
+<canvas id="myCanvas" width="1300" height="700" style="border: 1px solid black;margin-left: 0%"></canvas>
+<script>
+    var canvas = document.getElementById('myCanvas'); 
+    var ctx = canvas.getContext("2d");
+    ctx.fillStyle = 'black';
+    ctx.strokeStyle = 'rgba(0, 255, 255, .5)';
+    
+    var height = 400;
+    var width = 400;
+
+    var d1 = -30;
+    var d2 = 60;
+
+    var p1 = [50, 50];
+    // var p4 = [450, 50];
+    var p2 = [180, 20];
+    var p3 = [300, 110];
+    var p7 = [50, 450]; // last poin of 1st v line
+    var p5 = [20, 180];
+    var p6 = [110, 300];
+
+    var set = new Array();
+    set[0] = new Array();
+    set[1] = new Array();
+
+    var pointradius = 3;
+    var PE = false;
+    function drawPoint(x, y) {
+    	if (!PE) return;
+		ctx.beginPath();
+     	ctx.arc(x, y, pointradius, 0, 2 * Math.PI, false);
+      	ctx.fillStyle = 'white';
+      	ctx.fill();
+      	ctx.stroke();
+      	ctx.fillStyle = 'black';
+    }
+
+    function plot() {
+	    ctx.fillRect(0, 0, canvas.width, canvas.height);
+	    // draw top line and find the points
+	    set[0] = [];
+	    set[1] = [];
+	    ctx.beginPath();
+	    ctx.moveTo(p1[0], p1[1]);
+	    drawPoint(p1[0], p1[1]);
+	    var c = 0;
+	    for(var t = 0; t <= 1; t += .001) {
+	    	var x = Math.pow((1-t),3)*p1[0] + 3*t*(1-t)*(1-t)*p2[0] + 3*t*t*(1-t)*p3[0] + t*t*t*(p1[0] + width);
+	    	var y = Math.pow((1-t),3)*p1[1] + 3*t*(1-t)*(1-t)*(p1[1] + d1)
+	    			+ 3*t*t*(1-t)*(p1[1] +d2) + t*t*t*p1[1];
+	    	ctx.lineTo(x,y);
+	    	++c;
+	    	if (c % 100 == 0) {
+	    		set[0][set[0].length] = [x,y];
+	    		ctx.stroke();
+	    		drawPoint(x,y);
+	    		ctx.beginPath();
+	    	}
+	    	
+	    }
+	    // draw first verticle line and collect the points 
+	    ctx.moveTo(p1[0], p1[1]);
+	    var c = 0;
+	    for(var t = 0; t <= 1; t += .001) {
+	    	var x = Math.pow((1-t),3)*p1[0] + 3*t*(1-t)*(1-t)*(p1[0] + d1)
+	    			+ 3*t*t*(1-t)*(p1[0] +d2) + t*t*t*p1[0];
+	    	var y = Math.pow((1-t),3)*p1[1] + 3*t*(1-t)*(1-t)*p5[1] + 3*t*t*(1-t)*p6[1] + t*t*t*(p1[1]+height);
+	    	ctx.lineTo(x,y);
+	    	++c;
+	    	if (c % 100 == 0) {
+	    		set[1][set[1].length] = [x,y];
+	    		ctx.stroke();
+	    		drawPoint(x,y);
+	    		ctx.beginPath();
+	    	}
+	    	
+	    }
+
+	    // draw all vertical lines in a loop
+	    // then draw horizontal lines in a loop
+
+	    for(i = 0; i <= 9; i++) {
+		    ctx.moveTo(set[0][i][0], set[0][i][1]);
+
+		    var c = 0;
+		    for(var t = 0; t <= 1; t += .001) {
+		    	var x = Math.pow((1-t),3)*set[0][i][0] + 3*t*(1-t)*(1-t)*(set[0][i][0] + d1)
+		    	+ 3*t*t*(1-t)*(set[0][i][0] + d2) + t*t*t*set[0][i][0];
+		    	var y = Math.pow((1-t),3)*set[0][i][1] + 3*t*(1-t)*(1-t)*(180)
+		    	+ 3*t*t*(1-t)*(300) + t*t*t*(set[0][i][1] + height);
+		    	ctx.lineTo(x,y);
+
+		    	++c;
+		    	if (c % 100 == 0) {
+		    		set[0][set[0].length] = [x,y];
+		    		ctx.stroke();
+		    		drawPoint(x,y);
+		    		ctx.beginPath();
+	    		}
+		    }
+		}
+
+	    for(i = 0; i <= 9; i++) {
+		    ctx.moveTo(set[1][i][0], set[1][i][1]);
+
+		    var c = 0;
+		    for(var t = 0; t <= 1; t += .001) {
+		    	var y = Math.pow((1-t),3)*set[1][i][1] + 3*t*(1-t)*(1-t)*(set[1][i][1] + d1)
+		    	+ 3*t*t*(1-t)*(set[1][i][1] + d2) + t*t*t*set[1][i][1];
+		    	var x = Math.pow((1-t),3)*(set[1][i][0]) + 3*t*(1-t)*(1-t)*(180)
+		    	+ 3*t*t*(1-t)*(300) + t*t*t*(set[1][i][0] + width);
+		    	ctx.lineTo(x,y);
+
+		    	++c;
+		    	if (c % 100 == 0) {
+		    		set[0][set[0].length] = [x,y];
+		    		ctx.stroke();
+		    		drawPoint(x,y);
+		    		ctx.beginPath();
+	    		}
+		    }
+		}
+	    ctx.stroke();
+	}
+
+	plot();
+
+	var DFACTOR = 1;
+	var ME = false;	// Mouse enabled flag
+	document.onkeypress = function(e) {
+		if (e.which == 119) {
+			// W
+			d1 += DFACTOR;
+			plot();
+		} else if (e.which == 115) {
+			// S
+			d1 -= DFACTOR;
+			plot();
+		} else if (e.which == 97) {
+			// A
+			d2 -= DFACTOR;
+			plot();
+		} else if (e.which == 100) {
+			// D
+			d2 += DFACTOR;
+			plot();
+		} else if (e.which == 113) {
+			// Q
+			DFACTOR++;
+			console.log('DFACTOR = ' +DFACTOR);
+		} else if (e.which == 122) {
+			// Z
+			if (DFACTOR > 1)
+				DFACTOR--;
+			console.log('DFACTOR = ' +DFACTOR);
+		} else if (e.which == 109) {
+			ME = (ME)?false: true;
+		} else if (e.which == 112) {
+			PE = (PE)?false: true;
+			plot();
+		} else
+			console.log(e.which);
+	}
+
+	var l = {x: 0, y: 0};
+	
+	document.onmousemove = function(e) {
+		if (!ME) return;
+		var p = {x: e.x, y: e.y};
+		if (p.x > l.x) {
+			// right
+			d1 += DFACTOR;
+			plot();
+		} else if (p.x < l.x){
+			// left
+			d1 -= DFACTOR;
+			plot();
+		}
+
+		if (p.y > l.y) {
+			// down
+			d2 -= DFACTOR;
+			plot();
+		} else if (p.y < l.y){
+			// up
+			d2 += DFACTOR;
+			plot();
+		}
+
+		l = p;
+	}
+
+</script>
+    
+</body>
+</head>
+</html>
