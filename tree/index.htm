@@ -1,0 +1,73 @@
+<html>
+<head>
+<title>a resposive canvas</title>
+<script src="js/jquery.js"></script><script src="js/jquery-ui.js"></script>
+<canvas id="myCanvas" width="1000" height="700" style="border: 1px solid black;margin-left: 10px"></canvas>
+<script>
+    var canvas = document.getElementById('myCanvas');
+    var ctx = canvas.getContext("2d");
+
+    var dtheta = 20;
+    var dtheta_factor = 1;
+    var dlength = 100;
+    var dlength_factor = 2;
+    var dwidth = 10;
+    var dwidth_factor = 1;
+    var pfactor = 22 / (7 * 180);
+    var stheta = 90;
+    var stheta_factor = 2;
+
+    function clear() {
+        ctx.clearRect(0,0,1000,700);
+    }
+
+    function drawLine(x, y, theta, width, length) {
+        if (width == 0) return;
+        var t1 = theta + dtheta;
+        var t2 = theta - dtheta;
+        ctx.beginPath();
+        ctx.lineWidth = width;
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + (0.9 * length) * Math.cos(t1 * pfactor), y - (0.9 * length) * Math.sin(t1 * pfactor));
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + (0.9 * length) * Math.cos(t2 * pfactor), y - (0.9 * length) * Math.sin(t2 * pfactor));
+        ctx.stroke();
+        drawLine(x + (0.9 * length) * Math.cos(t1 * pfactor), y - (0.9 * length) * Math.sin(t1 * pfactor), t1, width - 1, 0.9 * length);
+        drawLine(x + (0.9 * length) * Math.cos(t2 * pfactor), y - (0.9 * length) * Math.sin(t2 * pfactor), t2, width - 1, 0.9 *length);
+    }
+
+    document.onkeypress = function(e) {
+        if (e.which == 119) {
+            dlength += dlength_factor;
+            clear();
+            drawLine(500, 600, stheta, dwidth, dlength);
+        } else if (e.which == 115) {
+            if (dlength <= dlength_factor) return;
+            dlength -= dlength_factor;
+            clear();
+            drawLine(500, 600, stheta, dwidth, dlength);
+        } else if (e.which == 97) {
+            dtheta += dtheta_factor;
+            clear();
+            drawLine(500, 600, stheta, dwidth, dlength);
+        } else if (e.which == 100) {
+            if (dtheta <= dtheta_factor) return;
+            dtheta -= dtheta_factor;
+            clear();
+            drawLine(500, 600, stheta, dwidth, dlength);
+        } else if (e.which == 106) {
+            stheta += stheta_factor;
+            clear();
+            drawLine(500, 600, stheta, dwidth, dlength);
+        } else if (e.which == 108) {
+            stheta -= stheta_factor;
+            clear();
+            drawLine(500, 600, stheta, dwidth, dlength);
+        } else console.log(e.which);
+    }
+
+    drawLine(500, 600, stheta, dwidth, dlength);
+</script>
+</body>
+</head>
+</html>
