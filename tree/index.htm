@@ -16,6 +16,7 @@
     var pfactor = 22 / (7 * 180);
     var stheta = 90;
     var stheta_factor = 2;
+    var leaf_width = 1;
 
     function clear() {
         ctx.clearRect(0,0,1000,700);
@@ -26,6 +27,8 @@
         var t1 = theta + dtheta;
         var t2 = theta - dtheta;
         ctx.beginPath();
+        if (width <= leaf_width) ctx.strokeStyle = 'green';
+        else ctx.strokeStyle = 'black';
         ctx.lineWidth = width;
         ctx.moveTo(x, y);
         ctx.lineTo(x + (0.9 * length) * Math.cos(t1 * pfactor), y - (0.9 * length) * Math.sin(t1 * pfactor));
