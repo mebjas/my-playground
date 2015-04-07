@@ -1,0 +1,80 @@
+<html>
+<head>
+<title>gravity space</title>
+<script src="js/jquery.js"></script><script src="js/jquery-ui.js"></script>
+<canvas id="myCanvas" width="800" height="500" style="border: 1px solid black;margin-left: 5%"></canvas>
+<script>
+var canvas = document.getElementById('myCanvas'); 
+var ctx = canvas.getContext("2d");
+var MAX = 4;
+
+var o = new Array();
+
+// Function to clear the screen
+function cls() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+var planets = function(x, y) {
+    this.x = x;
+    this.y = y;
+    this.plot();
+}
+
+planets.prototype.plot = function() {
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y);
+    ctx.arc(this.x, this.y, 5, 0, 2*Math.PI);
+    ctx.fill();
+    ctx.stroke();
+};
+
+planets.getTheta = function(t1, t2) {
+    var t = -1 * Math.atan( (t2.y - t1.y) / (t2.x - t1.x));
+    if (t2.y <= t1.y && t2.x >= t1.x) return t;
+    else if (t2.y <= t1.y && t2.x <= t1.x) return (Math.PI - t);
+    else if (t2.y >= t1.y && t2.x <= t1.x) return (Math.PI + t);
+    else return 2*Math.PI - t;
+}
+
+planets.plotGLines = function(i, j) {
+    for(_i = 0; _i < MAX; _i++) {
+        for(_j = 0; _j < MAX; _j++) {
+            if (_j == j && i == _i) continue;
+            ctx.beginPath();
+            ctx.moveTo(o[i][j].x, o[i][j].y);
+            ctx.lineTo(o[_i][_j].x, o[_i][_j].y);
+            ctx.strokeStyle = 'red';
+            ctx.stroke();
+        }
+    }
+}
+
+planets.prototype.getForce = function(i, j) {
+    var r = (this.x - i)*(this.x - i) + (this.y - j)*(this.y - j);
+    r = 1 / r;
+    var t = planets.getTheta({x: this.x, y: this.y}, {x: i, y: j});
+    console.log(Math.sin(t) +',' +Math.cos(t));
+}
+
+
+var padding  = 50;
+var _m = 50;
+var t = {x: 1, y:2};
+
+
+for(i = 0; i < 4; i++) {
+    o[i] = new Array();
+    for (j = 0; j < 4; j++) {
+        o[i][j] = new planets(i*_m + padding, j*_m + padding);
+        if (i != t.x && j != t.y) o[0][0].getForce(i, j);
+    }
+}
+
+planets.plotGLines(t.x , t.y);
+
+</script>
+    
+</body>
+</head>
+</html>

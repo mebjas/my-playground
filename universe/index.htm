@@ -1,0 +1,177 @@
+<html>
+<head>
+<title>universe</title>
+<script src="js/jquery.js"></script>
+<script src="js/jquery-ui.js"></script>
+<body style="margin: 0px;padding: 0px">
+<canvas id="myCanvas" width="1300" height="700" style="border: 1px solid black;margin-left: 0px"></canvas>
+<script>
+var canvas = document.getElementById('myCanvas');
+var ctx = canvas.getContext("2d");
+
+function clear() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+var box = function() {
+    this.x1 = 0;
+    this.y1 = 0;
+    this.x2 = canvas.width;
+    this.y2 = canvas.height;
+}
+
+box.prototype.Plot = function() {
+    ctx.beginPath();
+    ctx.fillStyle = 'black';
+    ctx.fillRect(this.x1, this.y1, this.x2 - this.x1, this.y2 - this.y1);
+    ctx.stroke();
+};
+
+var b = new box();
+b.Plot();
+
+var nodepool = {
+    pool : new Array(),
+    i : 0,
+    add : function(obj) {
+        nodepool.pool[nodepool.i++] = obj;
+    }
+}
+
+var node = function(x, y) {
+    this.x = x;
+    this.y = y;
+    this.dx = Math.random() * 10000 % 4 + 1;
+    if (Math.random() > 0.5) this.dx *= -1;
+
+    this.dy = Math.random() * 10000 % 4 + 1;
+    if (Math.random() > 0.5) this.dy *= -1;
+
+    this.ddx = 0;
+    this.ddy = 0;
+    // Generate random direction for it
+
+
+    this.Plot();
+}
+
+node.prototype.Plot = function(color) {
+    this.x += this.dx;
+    this.y += this.dy;
+
+    // Check boundary condition and change direction
+    if (this.x >= canvas.width || this.x <= 0) this.dx *= -1;
+    if (this.y >= canvas.height || this.y <= 0) this.dy *= -1;
+
+    // change in velocity due to acceleration
+    this.dx += this.ddx;
+    this.dy += this.ddy;
+
+    ctx.beginPath();
+    if (typeof color != 'undefined')
+        ctx.strokeStyle = color;
+    else ctx.strokeStyle = 'green';
+    // ctx.fillStyle = 'green';
+    ctx.arc(this.x, this.y, 5, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+}
+
+
+var frame = function() {
+    this.timediff = 50;
+    this.count = 330;
+    this.dmatrix = new Array();
+
+    for(i = 0; i < this.count; i++) {
+        x = Math.random() * 2000 % canvas.width + 10;
+        y = Math.random() * 2000 % canvas.height + 10;
+        nodepool.add(new node(x, y));
+
+        this.dmatrix[i] = new Array();
+    }
+
+    this.dmax = 60;
+    this.dmin = 20;
+    this.stresslevel = 50;
+
+    this.Plot();
+}
+
+frame.prototype.Plot = function() {
+    clear();
+    b.Plot();
+
+    for(i = 0; i < nodepool.i; i++) {
+        nodepool.pool[i].nbors = 0;
+    }
+
+    for(i = 0; i < nodepool.i; i++) {
+        if (i == 0) nodepool.pool[i].Plot('red');
+        else nodepool.pool[i].Plot();
+        // draw lines if any two nodes are like 
+        // certain distance apart
+        for (j = i + 1; j < nodepool.i; j++) {
+            var d = (nodepool.pool[i].x - nodepool.pool[j].x) * (nodepool.pool[i].x - nodepool.pool[j].x);
+            d += (nodepool.pool[i].y - nodepool.pool[j].y) * (nodepool.pool[i].y - nodepool.pool[j].y);
+            d = Math.sqrt(d);
+            this.dmatrix[i][j] = d;
+
+            if (d < this.dmax) {
+                nodepool.pool[i].nbors++;
+                nodepool.pool[j].nbors++;
+
+                var opacity = 1;
+                if (d > this.dmin) {
+                    var k = this.dmax - d;
+                    opacity -= (0.9 * (1 - k / (this.dmax - this.dmin)));
+                }
+
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(255,255, 0, ' +opacity +')';
+                ctx.moveTo(nodepool.pool[i].x, nodepool.pool[i].y);
+                ctx.lineTo(nodepool.pool[j].x, nodepool.pool[j].y);
+                ctx.stroke();
+            }
+        }
+
+        // console.log(nodepool.pool[i].nbors);
+        if (nodepool.pool[i].nbors > nodepool.i / this.stresslevel) {
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(255, 0, 0, .5)';
+            ctx.rect(nodepool.pool[i].x - 100, nodepool.pool[i].y - 100, 200, 200);
+            ctx.stroke();
+
+        }
+    }
+
+    for(i = 0; i < nodepool.i; i++) {
+        nodepool.pool[i].ddx = 0;
+        nodepool.pool[i].ddy = 0;
+
+        for (j = 0; j < nodepool.i; j++) {
+            if (i == j) continue;
+
+            var d = (i > j) ? this.dmatrix[j][i] : this.dmatrix[i][j];
+            if (d < 30) d = 30;
+            f = 1 / (d * d);
+            nodepool.pool[i].ddx -= (nodepool.pool[i].x - nodepool.pool[j].x) / d * f;
+            nodepool.pool[i].ddy -= (nodepool.pool[i].y - nodepool.pool[j].y) / d * f;
+        }
+
+        nodepool.pool[i].ddx *= 1000;
+        nodepool.pool[i].ddy *= 1000;
+
+    }
+
+    var $this = this;
+    setTimeout(function() {
+        $this.Plot();
+    }, this.timediff);
+}
+
+tmp = new frame();
+</script>
+</body>
+</head>
+</html>

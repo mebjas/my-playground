@@ -7,24 +7,29 @@
 <script>
     var canvas = document.getElementById('myCanvas'); 
     var ctx = canvas.getContext("2d");
-    var v = 10;
+    var v = 15;
     var dv = 0.01;
     var BASE_AT_Y = 250;
 
     
 
+    // ------------------------------------------------------------
+    // the player
+    // ------------------------------------------------------------
     var _player = function() {
     	this.x = 10;
         this.y = 0;
     	this.height = 20;
     	this.width = 10;
         this.color = '#333';
-    	this.gravity = -1;
+    	this.gravity = -3;
         this.vel = 0;
         this.is_on_jump = false;
         this.motion = true;
         this.legs_height = 20;
     	this.Plot();
+
+        this.start_vel = 15;
 
         this.count = 0;
         this.countMax = 5;
@@ -86,7 +91,7 @@
     
     _player.prototype.registerJump = function(fps) {
         this.is_on_jump = true;
-        this.vel = 10;
+        this.vel = this.start_vel;
         this.Jump(fps);
     }
 
@@ -104,6 +109,9 @@
         }
     }
 
+    // ------------------------------------------------------------
+    // the obstacles
+    // ------------------------------------------------------------
     var obstacles = function(d) {
         this.width = 6;
         this.color = 'rgba(10, 171, 10, 0.74)';
@@ -129,6 +137,9 @@
         return true;
     }
 
+    // ------------------------------------------------------------
+    // the cloud
+    // ------------------------------------------------------------
     var cloud = function(d) {
         this.width = 30;
         this.color = 'rgba(19, 146, 176, 0.59)';
@@ -147,7 +158,7 @@
         ctx.stroke();
     }
     cloud.prototype.move = function(fps) {
-        this.x -= v * (fps / 200);
+        this.x -= v * (fps / 500);
         if (this.x < -1 * this.width) {
             delete this;
             return false;
@@ -155,6 +166,9 @@
         return true;
     }
 
+    // ------------------------------------------------------------
+    // the dirt
+    // ------------------------------------------------------------
     var dirt = function(d) {
         this.width = Math.round(Math.random() * 500) % 7;
         this.width = (this.width < 3) ? 3 : this.width;
@@ -183,6 +197,8 @@
 
     var frame = function() {
         var $this = this;
+        this.score = 0;
+
         this.timestamp = 0;
         this.fps = 40;
         this.obj = new _player();
@@ -201,7 +217,7 @@
         this.cloudQueue = [];
         for(i = 0; i < 100; i++) this.cloudQueue[i] = -1;
         this.lastCloudPrinted = 0;
-        this.time_between_cloud = 2000;
+        this.time_between_cloud = 4000;
 
         this.dirtQueue = [];
         for(i = 0; i < 100; i++) this.dirtQueue[i] = -1;
@@ -209,6 +225,8 @@
         this.time_between_dirt = 1500;
 
         this.next();
+
+        this.stop = false;
     }
 
     frame.prototype.Plot = function() {
@@ -259,15 +277,31 @@
                 }
             }
         }
+
+        this.printScore();
+        if (this.checkCollision()) {
+            this.stop = true;
+        }
     }
 
     frame.prototype.Clear = function() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
+    frame.prototype.printScore = function() {
+        ctx.strokeStyle = "black";
+        ctx.fillStyle = "black";
+        ctx.font="16px Georgia";
+        ctx.fillText("score: " +Math.round(this.score),canvas.width -120,20);
+    }
+
     frame.prototype.next = function() {
+        if (this.stop) {
+            return true;
+        }
         v += dv;
         this.timestamp += this.fps;
+        this.score = this.timestamp / 1000;
         var $this = this;
 
         // Check if this is a perfect time to print an obstacle
@@ -321,6 +355,28 @@
             $this.Plot();
             $this.next();
         }, this.fps);
+    }
+
+    // true means collision
+    frame.prototype.checkCollision = function() {
+        var plyr = this.obj;
+        for(j = 0; j < this.obstacleQueue.length; j++) {
+            if (this.obstacleQueue[j] != -1) {
+                var obj = this.obstacleQueue[j];
+
+                var obx = obj.x;
+                var otx = obj.x + obj.width;
+                var oby = BASE_AT_Y;
+
+                var pbx = plyr.x;
+                var pby = BASE_AT_Y - plyr.y;
+                var ptx = plyr.width;
+
+                // Check intersection
+                if (ptx > obx && ptx < otx && pby < obj.height) return true;
+                if (pbx > obx && pbx < otx && pby < obj.height) return true;
+            }
+        }
     }
 
     new frame();
